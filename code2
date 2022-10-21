@@ -1,0 +1,51 @@
+import "./styles.css";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+
+function Reparent({ targetElem, contentElem, children }) {
+  useEffect(() => {
+    if (!targetElem || !contentElem) return;
+
+    targetElem.appendChild(contentElem);
+  }, [targetElem]);
+
+  if (!contentElem) return null;
+
+  return createPortal(children, contentElem);
+}
+
+function StatefulChild() {
+  const [state] = useState(new Date().toISOString());
+
+  return <div>{state}</div>;
+}
+
+export default function App() {
+  const [isRedTarget, setRedTarget] = useState(true);
+  const redTargetRef = useRef();
+  const blueTargetRef = useRef();
+  const [contentElem, setContentElem] = useState();
+
+  return (
+    <div className="App">
+      <button onClick={() => setRedTarget(!isRedTarget)}>
+        Move to {isRedTarget ? "blue" : "red"}
+      </button>
+      <div ref={setContentElem} />
+      <div
+        ref={redTargetRef}
+        style={{ backgroundColor: "pink", padding: "1rem" }}
+      />
+      <div
+        ref={blueTargetRef}
+        style={{ backgroundColor: "lightblue", padding: "1rem" }}
+      />
+      <Reparent
+        targetElem={isRedTarget ? redTargetRef.current : blueTargetRef.current}
+        contentElem={contentElem}
+      >
+        <StatefulChild />
+      </Reparent>
+    </div>
+  );
+}
